@@ -1,0 +1,17 @@
+{
+  "name": "spaceinvaders",
+  "version": "1.0.0",
+  "description": "Classic Space Invaders game built with vanilla JavaScript",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server -p 8080 -a 0.0.0.0 -o",
+    "dev": "http-server -p 8080 -a 0.0.0.0 -c-1",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["game", "space-invaders", "canvas", "javascript"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
