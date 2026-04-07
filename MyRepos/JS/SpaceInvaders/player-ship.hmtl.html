@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Player-Ship</title>
+    <style>
+        body {
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: monospace;
+            color: #0f0;
+        }
+        canvas {
+            border: 1px solid #0f04;
+            box-shadow: 0 0 20px #0f02;
+        }
+        #info{
+            margin-top: 15px;
+            color: #0f08;
+            font-size: 13px;
+        }
+        </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="600" height="400"></canvas> 
+<div id="info"> ← → Move Ship | Let's build this step by step!</div>
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const W = canvas.width;
+    const H = canvas.height;
+    
+    const player = {
+        x:280,
+        y:350,
+        w:40,
+        h:40,
+        speed:3,
+        
+        update: function(keys){
+            if(keys['ArrowLeft'] && this.x > 0){
+                this.x -= this.speed;
+            }
+            if(keys['ArrowRight'] && this.x + this.w < W){
+                this.x += this.speed;
+            }
+        },
+        
+        draw: function(ctx){
+            const x = this.x;
+            const y = this.y;
+            const w = this.w;
+            const h = this.h;
+            
+            ctx.shadowColor = '#0f0';
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = '#0f0';
+            
+            //Top cannon
+            ctx.fillRect(x + w/2 - 4, y, 8, 8);
+            // Upper body (narrow)
+            ctx.fillRect(x + 8, y + 8, w - 16, h - 8);
+            // Mid body (wider)
+            ctx.fillRect(x + 4, y + 12, w - 8, h - 12);
+            // Base (widest)
+            ctx.fillRect(x, y + 16, w, h - 16);
+            // Remove glow for next drawings
+            ctx.shadowBlur = 0;
+        }
+    };
+    
+    const keys = {};
+    document.addEventListener('keydown', e => {
+        keys[e.code] = true;
+        if(e.code.startsWith('Arrow'))e.preventDefault();
+    });
+    document.addEventListener('keyup', e => {
+        keys[e.code] = false;
+    });
+    
+    function update() {
+        player.update(keys);
+    }
+    function draw(){
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, W, H);
+        
+        ctx.strokeStyle = '#0f02';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(0, player.y + player.h + 5);
+        ctx.lineTo(W, player.y + player.h + 5);
+        ctx.stroke();
+        
+        player.draw(ctx);
+    }
+    
+    function gameLoop() {
+        update();
+        draw()
+        requestAnimationFrame(gameLoop);
+    }
+    gameLoop();
+</script>
+</body>
+</html>

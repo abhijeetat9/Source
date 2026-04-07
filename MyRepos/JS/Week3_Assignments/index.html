@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+<input oninput="debouncedPopulateDiv()" id="n1" type="text" placeholder="first number"></input><br><br>
+<input oninput="debouncedPopulateDiv()" id="n2" type="text" placeholder="second number"></input><br><br>
+<!--<button onclick="populateDiv()">Calculate Sum</button><br><br>-->
+
+<div id="finalSum"></div>
+
+<script>
+    let timeout;
+    function debouncedPopulateDiv(){
+        clearTimeout(timeout);
+        timeout = setTimeout(()=>{
+            populateDiv();
+        }, 1000);
+    }
+    function populateDiv(){
+
+        const p = document.getElementById('n1').value;
+        const n = document.getElementById('n2').value;
+        //const element = document.getElementById('finalSum');
+
+        fetch("http://localhost:3000/sum?a=" + a + "&b=" + b).then(function(res) {
+            console.log(res);
+            res.text().then(data => {
+                console.log(data);
+                document.getElementById('finalSum').innerHTML = data;
+            })
+        });
+    }
+</script>
+</body>
+</html>
