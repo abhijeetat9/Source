@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--<body>-->
+<!--    <input id="title" type="text" placeholder="title" /><br><br>-->
+<!--    <input id="description" type="text" placeholder="description" /><br><br>-->
+<!--    <button onclick="addTodo()">Add ToDo</button>-->
+<!--    <div id="todos">-->
+<!--    </div>-->
+
+
+<!--    <script>-->
+<!--        let globalID = 1;-->
+<!--        function markAsDone(todoId){-->
+<!--            const parent = document.getElementById(todoId);-->
+<!--            parent.children[2].innerHTML = "Done!";-->
+<!--        }-->
+<!--        -->
+<!--        function removeTodo(todo){-->
+<!--            const element = document.getElementById(todo.id);-->
+<!--            element.parent.removeChild(element);-->
+<!--        }-->
+<!--        function addTodo(){-->
+<!--            const title = document.getElementById('title').value;-->
+<!--            const description = document.getElementById('description').value;-->
+<!--            const outerDiv = document.getElementById('todos');-->
+
+<!--            outerDiv.appendChild(createChild(title, description, globalID++));-->
+
+<!--        }-->
+<!--        function createChild(title,description, id){-->
+<!--            const parent = document.createElement('div');-->
+<!--            const firstGrandChild = document.createElement('div');-->
+<!--            firstGrandChild.innerHTML = title;-->
+<!--            const secondGrandChild = document.createElement('div');-->
+<!--            secondGrandChild.innerHTML = description;-->
+<!--            const thirdGrandChild = document.createElement('button');-->
+<!--            thirdGrandChild.innerHTML = "Mark as Done";-->
+<!--            thirdGrandChild.setAttribute('onclick', `markAsDone(${id})`);-->
+<!--            parent.appendChild(firstGrandChild);-->
+<!--            parent.appendChild(secondGrandChild);-->
+<!--            parent.appendChild(thirdGrandChild);-->
+<!--            parent.setAttribute('id', id);-->
+<!--            return parent;-->
+<!--        }-->
+
+<!--        function updateDOM(state){-->
+<!--            const parent = document.getElementById('todos');-->
+<!--            parent.innerText = "";-->
+<!--            for(let i = 0; i < state.length; i++){-->
+<!--                const child = createChild(state[i].title,state[i].description, state[i].id);-->
+<!--                parent.appendChild(child);-->
+<!--            }-->
+<!--        }-->
+<!--        updateDOM([{-->
+<!--            title: 'go to gym',-->
+<!--            description: 'Go to gym 5 to 7',-->
+<!--            id: 1,-->
+<!--        }-->
+<!--        ]);-->
+<!--    </script>-->
+<!--</body>-->
+
+<body>
+<div id="buttonParent"></div>
+<script>
+    
+    let state = {
+        count: 0,
+    }
+    
+    function onButtonPress(){
+        state.count++;
+        buttonComponentReRender();
+    }
+    
+    function buttonComponentReRender(){
+        document.getElementById('buttonParent').innerHTML = " ";
+        const component = buttonComponent(state.count);
+        document.getElementById('buttonParent').appendChild(component);
+    }
+    
+    function buttonComponent(count){
+        const button = document.createElement("button");
+        button.innerHTML = `Counter ${count}`;
+        button.setAttribute('onclick', "onButtonPress ()");
+        return button;
+    }
+    
+    buttonComponentReRender();
+</script>
+</body>
+</html>
