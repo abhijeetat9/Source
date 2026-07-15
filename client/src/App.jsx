@@ -18,6 +18,8 @@ function App() {
                 <ProtectedRoute><JobForm/></ProtectedRoute>
             }/>
             <Route path="*" element={<Navigate to="/login"/>}/>
+            
+            {/*<div className="bg-red-400 text-white p-4">Tailwind Works</div>*/}
         </Routes>
     )
 }
