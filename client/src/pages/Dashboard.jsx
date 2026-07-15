@@ -30,6 +30,8 @@ export default function Dashboard() {
             const updated = await updateJob(auth.token, id,editForm)
             setJobs(prev  => prev.map(j => j._id === id ? updated : j))
             setEditingId(null)
+            const statsData = await getStats(auth.token)
+            setStats(statsData)
         }catch(error){
             alert('Failed to update job');
         }
@@ -97,7 +99,7 @@ export default function Dashboard() {
                             {label: 'Interviews', value: stats.interview, color: 'text-blue-600'},
                             {label: 'Offers', value: stats.offer, color: 'text-emerald-600'},
                             {label: 'Rejected', value: stats.rejected, color: 'text-red-600'},
-                            {label: 'Interview Rate', value: `${stats.interview_rate}%`, color: 'text-indigo-600'},
+                            {label: 'Interview Rate', value: `${stats.interviewRate}%`, color: 'text-indigo-600'},
                             
                         ].map(s => (
                             <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-5">
@@ -120,7 +122,7 @@ export default function Dashboard() {
                 {/*Jobs List*/}
 
                 {jobs.map(job => (
-                    <div key={job._id} className="bg-white border border-gray-200 rounded-xl px-6 py-4">
+                    <div key={job._id} className="bg-white border border-gray-200 rounded-xl px-6 py-4 mb-3">
                         {editingId === job._id ? (
                             // ── EDIT MODE
                             <div className="flex items-center gap-4 flex-wrap">

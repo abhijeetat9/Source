@@ -38,7 +38,7 @@ export default function Login() {
         <div className="bg-slate-600 h-screen flex justify-center items-center">
         <div className="w-full max-w-xs">
             <form className="bg-white shadow-md rounded px-8 pt-8 pb-8 mb-4" onSubmit={handleSubmit}>
-                <h1 className="mb-4">Login</h1>
+                <h1 className="mb-4 font-semibold text-lg">Login</h1>
                 <div className="mb-4">
                     <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
                     <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="email" value={email} onChange={e => setEmail(e.target.value)} required/>
@@ -52,7 +52,7 @@ export default function Login() {
                 <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit" disabled={loading}>
                     {loading ? 'Logging in...' : 'Login'}
                 </button>
-                <p>No account? <Link to="/register">Register</Link></p>
+                <p>No account? <Link className="underline text-blue-500 hover:text-blue-700" to="/register" >Register</Link></p>
                 </div>
             </form>
         </div>
