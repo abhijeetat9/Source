@@ -1,0 +1,27 @@
+# Dependency folders
+node_modules/
+vendor/
+
+# Build outputs and caches
+dist/
+build/
+.next/
+.cache/
+
+# Logs and environment files
+*.log
+.env*
+
+# Specific files
+secret_keys.txt
+
+node_modules/
+.git/
+dist/
+build/
+*.lock
+*.log
+coverage/
+.next/
+venv/
+__pycache__/
