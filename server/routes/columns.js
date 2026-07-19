@@ -4,19 +4,10 @@ const Board = require('../models/Board');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const {createColumnSchema, updateColumnSchema, reorderColumnSchema} = require('../schemas/columnSchema');
-
+const checkBoardAccess = require('../utils/boardAccess');
 const router = express.Router();
 
 router.use(auth);
-
-async function checkBoardAccess(boardId, userId){
-    const board = await Board.findById(boardId)
-    if(!board) return null;
-    
-    const hasAccess = board.owner.toString() === userId || board.members.map(m => m.toString()).includes(userId)
-    
-    return hasAccess ? board: null;
-}
 
 router.post('/', validate(createColumnSchema), async (req, res) => {
     try{

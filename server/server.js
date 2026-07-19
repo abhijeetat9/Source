@@ -26,6 +26,9 @@ app.use('/api/boards', boardRoutes);
 const columnRoutes = require('./routes/columns');
 app.use('/api/columns', columnRoutes);
 
+const cardRoutes = require('./routes/cards');
+app.use('/api/cards', cardRoutes);
+
 app.get('/', (req, res) => {
     res.json({message: 'Collab tool API is online'});
 })
