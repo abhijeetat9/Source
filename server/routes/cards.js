@@ -120,7 +120,7 @@ router.delete('/:id', async (req, res) => {
         if (!board) return res.status(403).json({error: 'Access Denied'});
         
         await Card.findByIdAndDelete(req.params.id)
-        res.status(201).send()
+        res.status(204).send()
     }catch(err){
         res.status(500).json({error: err.message});
     }
