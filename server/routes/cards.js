@@ -27,7 +27,11 @@ router.get('/:id', async (req, res) => {
     try{
         const card = await Card.findById(req.params.id).populate('assignee', 'name email avatar')
         
-        if(!card) return res.status(403).json({error: 'Access Denied'});
+        if(!card) return res.status(403).json({error: 'Card not found'});
+        
+        const board = await checkBoardAccess(card.boardId, req.userId);
+        if (!board) return res.status(403).json({error: 'Access Denied'});
+
         res.json(card)
     }catch(err){
         res.status(500).json({error: err.message});
@@ -68,7 +72,7 @@ router.patch('/move', validate(moveCardSchema), async (req, res) => {
             await Promise.all(
                 oldColumnCards
                     .filter(c => c._id.toString() !== cardId)
-                    .map((c , i) => Card.findByIdAndUpdate(c._id, {order:1}))
+                    .map((c , i) => Card.findByIdAndUpdate(c._id, {order: i}))
             )
         }
         const newColumnCards = await Card.find({
@@ -78,7 +82,7 @@ router.patch('/move', validate(moveCardSchema), async (req, res) => {
 
         await Promise.all(
             newColumnCards.map((c, i) => {
-                const order = i >= newOrder ? i + 1 : 1
+                const order = i >= newOrder ? i + 1 : i
                 return Card.findByIdAndUpdate(c._id, {order})
             })
         )
