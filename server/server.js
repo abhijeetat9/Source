@@ -92,6 +92,7 @@ io.on('connection', (socket) => {
     })
     
     socket.on('column-deleted', ({boardId, columnId}) => {
+        console.log('column-created received, broadcasting to room:', boardId)
         socket.to(boardId).emit('column-deleted', {columnId})
     })
     

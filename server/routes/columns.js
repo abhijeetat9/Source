@@ -18,7 +18,7 @@ router.post('/', validate(createColumnSchema), async (req, res) => {
         const count = await Column.countDocuments({boardId})
         
         const column = await Column.create({title, boardId, order: count});
-        res.status(201).json({column})
+        res.status(201).json(column)
     }catch(err){
         res.status(400).json({error: err.message});
     }
