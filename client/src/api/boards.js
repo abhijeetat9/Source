@@ -31,7 +31,7 @@ export async function deleteBoard(token,id){
     if(!res.ok) throw await res.json()
 }
 
-export async function inviteMembers(token,boardId,email){
+export async function inviteMembers(token, boardId, email){
     const res = await fetch(`${API.boards}/${boardId}/members`, {
         method: 'POST',
         headers: getHeaders(token),

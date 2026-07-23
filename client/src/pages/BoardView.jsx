@@ -1,21 +1,25 @@
 import {useState, useEffect} from 'react'
 import {useParams, useNavigate} from 'react-router-dom'
+import {DndContext, closestCorners} from '@dnd-kit/core'
 import useAuthStore from "../store/authStore"
+import useBoardStore from "../store/boardStore.js";
 import socket from "../socket/socket"
 import {getBoard} from "../api/boards"
 import {getColumns, createColumn} from "../api/columns"
-import {getCards, createCard} from "../api/cards"
-import useBoardStore from "../store/boardStore";
+import {getCards, moveCard as moveCardAPI} from "../api/cards"
+import Column from "../components/Column";
+import InviteModal from "../components/InviteModal";
+
 
 export default function BoardView() {
     const {id} = useParams()
-    const {token, user} = useAuthStore()
+    const {token} = useAuthStore()
     const navigate = useNavigate()
     
     const {
         board, columns, cards,
         setBoard, setColumns, setCards,
-        addCard, updateCard, removeCard, moveCard,
+        addCards, updateCard, removeCard, moveCard,
         addColumn, removeColumn
     } = useBoardStore()
     
@@ -23,6 +27,8 @@ export default function BoardView() {
     const [error, setError] = useState(null)
     const [newColTitle, setNewColTitle] = useState('')
     const [addingCol, setAddingCol] = useState(false)
+    
+    const [showInvite, setShowInvite] = useState(false)
     
     useEffect(() =>{
         async function load() {
@@ -49,14 +55,13 @@ export default function BoardView() {
             socket.emit('join-board', {boardId: id, token})
             console.log('Emitting join-board for', id)
         }
-        if(socket.connected){
-            joinBoard()
-        }else {
+        if(socket.connected) joinBoard()
+        else {
             socket.connect()
             socket.once('connect', joinBoard)
         }
         
-        socket.on('card-created', ({card}) => addCard(card))
+        socket.on('card-created', ({card}) => addCards(card))
         socket.on('card-updated', ({card}) => updateCard(card))
         socket.on('card-deleted', ({card}) => removeCard(card))
         socket.on('card-moved', ({cardId, toColumnId, newOrder}) => moveCard(cardId, toColumnId, newOrder))
@@ -73,6 +78,35 @@ export default function BoardView() {
             socket.off('column-deleted')
         }
     }, [id, token])
+    
+    //Drag and Drop
+    async function handleDragEnd(event){
+        const { active, over } = event
+        if(!over) return
+        
+        const cardId = active.id
+        const fromColumnId = active.data.current?.columnId
+        const toColumnId = over.data.current?.columnId ?? fromColumnId
+        
+        if (cardId === over.id && fromColumnId === toColumnId) return
+        
+        const destCards = cards
+            .filter(c => c.columnId === toColumnId).sort((a,b) => a.order-b.order)
+        
+        const overIndex = destCards.findIndex(c => c._id === over.id)
+        const newOrder = overIndex >= 0 ? overIndex : destCards.length
+        
+        moveCard(cardId, toColumnId, newOrder)
+        
+        try{
+            await moveCardAPI(token, {cardId, fromColumnId, toColumnId, newOrder})
+            socket.emit('card-moved', {boardId: id, cardId, fromColumnId, toColumnId, newOrder})
+        }catch(err){
+            console.log('Move failed', err)
+            const cardsData = await getCards(token, id)
+            setCards(cardsData)
+        }
+    }
     
     //Add column
     async function handleAddColumn(e) {
@@ -117,116 +151,59 @@ export default function BoardView() {
                 <button 
                     onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-gray-600 text-sm">Back</button>
                 <h1 className="text-lg font-bold text-gray-900">{board?.title}</h1>
+                <button onClick={() => setShowInvite(true)} className="ml-auto text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors">
+                    + Invite
+                </button>
             </header>
+
+            {showInvite && (
+                <InviteModal boardId={id}
+                             token={token}
+                             onClose={() => setShowInvite(false)}/>
+            )}
             
-            {/*Board -horizontal scroll*/}
+            {/*Board */}
             <div className="flex-1 overflow-x-auto p-6">
-                <div className="flex gap-4 h-full items-start">
-                    
+                <DndContext collisionDetection={closestCorners}
+                onDragEnd={handleDragEnd}>
+                <div className="flex gap-4 items-start">
+                
                     {/*Columns*/}
 
                     {columns.map(column => (
-                        <div 
+                        <Column 
                             key={column._id} 
-                             className="bg-white rounded-xl border border-gray-100 flex items-center justify-between">
-                            
-                            {/* Column header */}
-                            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                            <h3 className="font-semibold text-gray-800">{column.title}
-                            <span className="text-xs text-gray-400">{getColumnCards(column._id).length}</span></h3>
-                        </div>
-
-                    {/* Cards */}
-                        <div className="p-3 flex flex-col gap-2 flex-1">
-                            {getColumnCards(column._id).map(card => (
-                                <div key={card._id} 
-                                     className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 cursor-pointer hover:border-indigo-300 hover:bg-white transition-all">
-                                    {card.title}
-                                </div>
-                            ))}
-                        </div>
-
-                            {/* Add card — stub for now */}  
-                            <AddCardInline columnId={column._id}
+                            column={column}
+                            cards={getColumnCards(column._id)}
                             boardId={id}
                             token={token}
-                            onAdd={(card) => {
-                                addCard(card)
+                            onAddCard={(card) => {
+                                addCards(card)
                                 socket.emit('card-created', {boardId: id, card})
-                            }}
-                            />
-                </div>
-                        ))}
-
-                    {/* Add column */}
-                    <div className="bg-white rounded-xl border border-gray-200 w-72 shrink-0 flex flex-col">
+                            }}/>
+                    ))}
+                    
+                    <div className="bg-white rounded-xl border border-gray-200 w-72 shrink-0 p-3">
                         <form onSubmit={handleAddColumn} className="flex flex-col gap-2">
                             <input type="text"
                             value={newColTitle}
                             onChange={e => setNewColTitle(e.target.value)}
-                                   placeholder="Add a column..."
+                            placeholder="Add a column.."
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus: ring-indigo-500"/>
-                            <button type="submit"
-                            disabled={addingCol || !newColTitle.trim()}
-                            className="bg-indigo-700 text-white py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-900 disabled:opacity-50 transition-colors">
-                                {addingCol ? 'Adding Column...' : 'Add Column'}
+                            <button
+                                type="submit"
+                                disabled={addingCol || !newColTitle.trim()}
+                                className="bg-indigo-700 text-white py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-900 disabled:opacity-50 transition-colors"
+                            >
+                                {addingCol ? 'Adding...' : 'Add Column'}
                             </button>
                         </form>
                     </div>
+                            
+                            
             </div>
+                </DndContext>
         </div>
         </div>
-    )
-}
-
-function AddCardInline({columnId, boardId, token, onAdd}) {
-    const [title, setTitle] = useState('')
-    const [adding, setAdding] = useState(false)
-    const [open, setOpen] = useState(false)
-    
-    async function handleSubmit(e) {
-        e.preventDefault()
-        if(!title.trim()) return
-        setAdding(true)
-        try {
-            const card = await createCard(token, {title, columnId, boardId})
-            onAdd(card)
-            setTitle('')
-            setOpen(false)
-        }catch(err){
-            console.log(err)
-        }finally {
-            setAdding(false)
-        }
-    }
-    
-    if(!open) return (
-        <button onClick={() => setOpen(true)} 
-                className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-b-xl transition-colors">
-            + Add Card
-        </button>
-    )
-    
-    return (
-        <form onSubmit={handleSubmit} className="p-3 border-t border-gray-100">
-            <input type="text"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            placeholder="Card title..."
-            autoFocus
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2"/>
-            <div className="flex gap-2">
-                <button type="submit"
-                disabled={adding || !title.trim()}
-                className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-indigo-700 disabled:opacity-50">
-                    {adding ? 'Adding...' : 'Add'}
-                </button>
-                <button type="button"
-                onClick={() => {setOpen(false); setTitle('') }}
-                className="text-gray-400 hover:text-gray-600 text-xs px-2">
-                    Cancel
-                </button>
-            </div>
-        </form>
     )
 }
