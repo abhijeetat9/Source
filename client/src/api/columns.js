@@ -34,5 +34,4 @@ export async function deleteColumn(token, id){
         headers: getHeaders(token),
     })
     if(!res.ok) throw await res.json()
-    return res.json()
 }

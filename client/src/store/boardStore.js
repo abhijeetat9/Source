@@ -9,7 +9,7 @@ const useBoardStore = create((set,get) => ({
     setColumns: (columns) => set({columns}),
     setCards: (cards) => set({cards}),
     
-    addCards: (card) => set((state) => ({
+    addCard: (card) => set((state) => ({
         cards: [...state.cards, card],
     })),
     

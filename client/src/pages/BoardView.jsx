@@ -19,7 +19,7 @@ export default function BoardView() {
     const {
         board, columns, cards,
         setBoard, setColumns, setCards,
-        addCards, updateCard, removeCard, moveCard,
+        addCard, updateCard, removeCard, moveCard,
         addColumn, removeColumn
     } = useBoardStore()
     
@@ -61,12 +61,13 @@ export default function BoardView() {
             socket.once('connect', joinBoard)
         }
         
-        socket.on('card-created', ({card}) => addCards(card))
+        socket.on('card-created', ({card}) => addCard(card))
         socket.on('card-updated', ({card}) => updateCard(card))
         socket.on('card-deleted', ({card}) => removeCard(card))
         socket.on('card-moved', ({cardId, toColumnId, newOrder}) => moveCard(cardId, toColumnId, newOrder))
         socket.on('column-created', ({column}) => addColumn(column))
-        socket.on('column-deleted', ({columnId}) => removeColumn(columnId))
+        socket.on('column-deleted', ({boardId, columnId}) =>{ console.log('column-deleted received, broadcasting to room: ', boardId)
+        removeColumn(columnId)})
         
         return () => {
             socket.emit('leave-board', {boardId: id})
@@ -178,9 +179,17 @@ export default function BoardView() {
                             boardId={id}
                             token={token}
                             onAddCard={(card) => {
-                                addCards(card)
+                                addCard(card)
                                 socket.emit('card-created', {boardId: id, card})
-                            }}/>
+                            }}
+                        onDelete={(columnId) => {
+                            removeColumn(columnId)
+                            socket.emit('column-deleted', {boardId: id, columnId})
+                        }}
+                        onDeleteCard={(cardId) => {
+                            removeCard(cardId)
+                            socket.emit('card-deleted', {boardId: id, cardId})
+                        }}/>
                     ))}
                     
                     <div className="bg-white rounded-xl border border-gray-200 w-72 shrink-0 p-3">
