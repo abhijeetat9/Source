@@ -12,6 +12,10 @@ const io = new Server(server, {
     cors: {origin: '*', methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']},
     credentials: false
 })
+module.exports.io = io
+
+const userSockets = new Map()
+module.exports.userSockets = userSockets
 
 const PORT = process.env.PORT || 8000;
 
@@ -39,12 +43,25 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
     console.log(`Client connected: ${socket.id}`);
     
+    socket.on('register', ({token}) => {
+        try{
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            socket.userId= decoded.userId
+            userSockets.set(decoded.userId.toString(), socket.id)
+            console.log(`User ${decoded.userId} registered socket ${socket.id}`)
+        }catch(err){
+            console.log('invalid token on register')
+        }
+    })
+    
     socket.on('join-board', ({boardId, token}) => {
         try{
             const decoded = jwt.verify(token, process.env.JWT_SECRET)
             socket.userId = decoded.userId;
+            userSockets.set(decoded.userId.toString(), socket.id)
             socket.join(boardId)
             console.log(`User ${decoded.userId} has joined the board ${boardId}`)
+            console.log(`Room members:`, io.sockets.adapter.rooms.get(boardId)?.size)
             
             socket.to(boardId).emit('user-joined', {
                 userId: decoded.userId,
@@ -99,12 +116,16 @@ io.on('connection', (socket) => {
     })
     
     socket.on('disconnect', () => {
+        if(socket.userId){
+            userSockets.delete(socket.userId.toString())
+        }
         console.log(`Client disconnected ${socket.id}`)
     })
 })
+
 
 server.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
 })
 
-module.exports = { io }
+module.exports = { io, userSockets }

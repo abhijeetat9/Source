@@ -24,6 +24,7 @@ export default function Register() {
             setAuth(data.token, data.user)
             
             socket.connect()
+            socket.emit('register', {token: data.token})
             navigate('/dashboard')
         }catch(err){
             setError(err.error || 'Registration Failed')

@@ -3,8 +3,8 @@ import {useNavigate} from 'react-router-dom'
 import useAuthStore from "../store/authStore"
 import socket from "../socket/socket"
 import {getBoards, createBoard} from "../api/boards"
-
-
+import Toast from "../components/Toast"
+import useNotificationStore from "../store/notificationStore.js";
 export default function Dashboard() {
     
     const {token, user, logout} = useAuthStore()
@@ -15,7 +15,27 @@ export default function Dashboard() {
     const [error, setError] = useState(null)
     const [newTitle, setNewTitle] = useState('')
     const [creating, setCreating] = useState(false)
+    const addNotification = useNotificationStore(state => state.addNotification)
 
+    useEffect(() => {
+        socket.on('board-invite', ({board}) => {
+            console.log('board-invite', board)
+            addNotification({
+                boardId: board._id,
+                boardTitle: board.title,
+            })
+            
+            setBoards(prev => {
+            const exists = prev.find(b => b._id === board._id)
+        if (exists) return prev
+        return [board, ...prev]
+        })
+    })
+        return () =>{
+            socket.off('board-invite')
+        }
+    }, [])
+    
     useEffect(() => {
         async function load() {
             try{
@@ -100,6 +120,7 @@ export default function Dashboard() {
                     ))}
                 </div>)}
             </main>
+            <Toast/>
         </div>
     )
 }

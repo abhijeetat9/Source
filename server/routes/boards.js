@@ -4,7 +4,7 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const {createBoardSchema, updateBoardSchema, inviteMemberSchema} = require('../schemas/boardSchema');
-
+const {io, userSockets} = require('../server');
 const router = express.Router()
 
 router.use(auth)
@@ -118,6 +118,20 @@ router.post('/:id/members', validate(inviteMemberSchema), async (req, res) => {
         
         board.members.push(invitee._id)
         await board.save()
+        
+        const inviteeSocketId = userSockets.get(invitee._id.toString())
+        console.log('Invitee userID: ', invitee._id.toString())
+        console.log('All connected users: ', [...userSockets.entries()])
+        console.log('Invitee: ', inviteeSocketId)
+        if(inviteeSocketId) {
+            io.to(inviteeSocketId).emit('board-invite', {
+                board: {
+                    _id: board._id,
+                    title: board.title,
+                },
+            })
+            console.log(`Sent board-invite to user ${invitee._id}`)
+        }
         await board.populate('owner', 'name email avatar')
         await board.populate('members', 'name email avatar')
         

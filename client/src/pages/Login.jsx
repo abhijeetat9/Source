@@ -23,6 +23,7 @@ export default function Login() {
             setAuth(data.token, data.user)
             
             socket.connect()
+            socket.emit('register', {token: data.token})
             navigate('/dashboard')
         }catch(err) {
             setError(err.error || 'Login failed.')
