@@ -23,8 +23,8 @@ export default function InviteModal({boardId, token, onClose}) {
     }
     
     return (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-            <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-100">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl z-101">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Invite to board</h2>
                 <form onSubmit={handleSubmit}
                 className="space-y-4">

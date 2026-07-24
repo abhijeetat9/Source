@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react'
 import {useParams, useNavigate} from 'react-router-dom'
-import {DndContext, closestCorners} from '@dnd-kit/core'
+import {DndContext, closestCorners, PointerSensor, useSensor, useSensors} from '@dnd-kit/core'
 import useAuthStore from "../store/authStore"
 import useBoardStore from "../store/boardStore.js";
 import socket from "../socket/socket"
@@ -29,6 +29,14 @@ export default function BoardView() {
     const [addingCol, setAddingCol] = useState(false)
     
     const [showInvite, setShowInvite] = useState(false)
+    
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 4,
+            },
+        })
+    )
     
     useEffect(() =>{
         async function load() {
@@ -164,8 +172,8 @@ export default function BoardView() {
             )}
             
             {/*Board */}
-            <div className="flex-1 overflow-x-auto p-6">
-                <DndContext collisionDetection={closestCorners}
+            <div className="flex-1 overflow-x-auto p-6 relative z-0">
+                <DndContext sensors={sensors} collisionDetection={closestCorners}
                 onDragEnd={handleDragEnd}>
                 <div className="flex gap-4 items-start">
                 
