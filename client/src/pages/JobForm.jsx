@@ -3,9 +3,10 @@ import {useRecoilState} from "recoil";
 import {useNavigate} from "react-router-dom";
 import {authAtom} from "../atoms/authAtom";
 import {InputBox} from "../components/InputBox.jsx";
+import { createJob } from '../api/jobs'
 
 export default function JobForm() {
-    const [auth, setAuth] = useRecoilState(authAtom);
+    const [auth] = useRecoilState(authAtom);
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
@@ -24,7 +25,10 @@ export default function JobForm() {
         setError(null)
         setLoading(true)
         try {
-            await createJob(auth.token, form)
+            console.log('Submitting with token:', auth.token)
+            console.log('Form data:', form)
+            const job = await createJob(auth.token, form)
+            console.log('Job created:', job)
             navigate('/dashboard')
         }catch(err) {
             setError(err.error || 'Failed to create job')
@@ -76,7 +80,7 @@ export default function JobForm() {
                             </div>
                             
                         </div>
-                        <div className="grid gap-6 mb-6 md:grid-cols-2" onSubmit={handleSubmit}>
+                        <div className="grid gap-6 mb-6 md:grid-cols-2">
                             {/* fields */}
                             <button type="submit" disabled={loading}>{loading ? 'Saving...' : 'Submit'}</button>
                             <button type="button" onClick={() => navigate(-1)}>Cancel</button>

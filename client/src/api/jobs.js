@@ -1,5 +1,4 @@
-const BASE = 'http://localhost:4000/api/jobs';
-
+const BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/jobs`
 function getHeaders(token) {
     return {
         'Content-Type': 'application/json',
