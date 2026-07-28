@@ -1,6 +1,7 @@
 import {useState} from 'react'
 import {updateCard} from "../api/cards.js";
 import useBoardStore from "../store/boardStore.js";
+import socket from "../socket/socket.js";
 
 export default function CardModal({card, token, onClose}) {
     const {board, updateCard: updateCardStore} = useBoardStore()
@@ -22,6 +23,8 @@ export default function CardModal({card, token, onClose}) {
             })
             updateCardStore(updated)
             onClose()
+            
+            socket.emit('card-updated', {boardId: updated.boardId, card: updated})
         }catch(err){
             setError(err.error || 'Failed to save')
         }finally {

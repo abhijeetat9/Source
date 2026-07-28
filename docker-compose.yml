@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  server:
+    build: ./server
+    container_name: collab-server
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=8000
+    networks:
+      - collab-network
+    
+  client: 
+    build: ./client
+    container_name: collab-client
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+    networks:
+      - collab-network
+    
+networks:
+  collab-network:
+    driver: bridge
