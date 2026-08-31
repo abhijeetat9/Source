@@ -58,7 +58,7 @@ export default function Login() {
                         Server is waking up, this may take up to 30 seconds...
                     </p>
                 )}
-                {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+                {error && ( <p className="text-red-500 text-sm mb-4">{error}</p> )}
                 <div className="flex items-center justify-between">
                 <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit" disabled={loading}>
                     {loading ? 'Logging in...' : 'Login'}
